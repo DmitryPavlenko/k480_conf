@@ -1,7 +1,8 @@
 /*
- * Copyright 2015 Emir Bucalovic <betoneful@gmail.com> www.betoneful.com
+ * Copyright 2018 Dmitriy Pavlenko <azeos1101@gmail.com>
  * based on:
- * k810_conf.c by Mario Scholz <mario@expires-2013.mail.trial-n-error.net>
+ * k810_conf.c by Mario Scholz <mario@expires-2013.mail.trial-n-error.net>,
+ * k480_conf.c by Emir Bucalovic <betoneful@gmail.com>
  * and pairing_tool.c from Benjamin Tissoires <benjamin.tissoires@gmail.com>
  *          see also https://lkml.org/lkml/2011/9/22/367
  *
@@ -17,6 +18,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * This version includes newest version Logitech K480.
  */
 #include <linux/input.h>
 #include <linux/hidraw.h>
@@ -29,17 +32,14 @@
 #include <ctype.h>
 #include <errno.h>
 
-#define HID_VENDOR_ID_LOGITECH			(__u32)0x046d
-//If using k810 #define HID_DEVICE_ID_K810                      (__s16)0xb319
-#define HID_DEVICE_ID_K480                      (__s16)0xb330
-#define HID_DEVICE_ID_K480_ALT                  (__s16)0xb33c
+#define HID_VENDOR_ID_LOGITECH (__u32)0x046d
+#define HID_DEVICE_ID_K480_0   (__s16)0xb330
+#define HID_DEVICE_ID_K480_1   (__s16)0xb33c
+#define HID_DEVICE_ID_K480_2   (__s16)0xb33d
 
-
-const char k480_seq_fkeys_on[]  = {0x10, 0xff, 0x08, 0x1c, 0x00, 0x00, 0x00};
-const char k480_seq_fkeys_off[] = {0x10, 0xff, 0x08, 0x1c, 0x01, 0x00, 0x00};
-
-//const char k810_seq_fkeys_on[]  = {0x10, 0xff, 0x06, 0x15, 0x00, 0x00, 0x00};
-//const char k810_seq_fkeys_off[] = {0x10, 0xff, 0x06, 0x15, 0x01, 0x00, 0x00};
+// {0x10, 0xff, 0x0b, [0x1b], ...} fourth byte can be 0x1a, 0x1b, 0x1c, 0x1d.
+const char k480_seq_fkeys_on[]  = {0x10, 0xff, 0x0b, 0x1c, 0x00, 0x00, 0x00};
+const char k480_seq_fkeys_off[] = {0x10, 0xff, 0x0b, 0x1c, 0x01, 0x00, 0x00};
 
 const char opt_on[]  = "on";
 const char opt_off[] = "off";
@@ -56,14 +56,9 @@ void send(const int fd, const char * buf, const int len)
 		printf("Error: %d\n", errno);
 		perror("write");
 	}
-	else if (res == len)
-       	{
-		// printf("Configuration sent.\n");
-	}
 	else
 	{
-		errno = ENOMEM;
-		printf("write: %d were written instead of %d.\n", res, len);
+		printf("Configuration sent. Try it now.\n");
 	}
 }
 
@@ -79,7 +74,7 @@ int main(int argc, char **argv)
 
 	if (argc < 5)
 	{
-		printf("Logitech K810 Keyboard Configurator (by trial-n-error)\n\n");
+		printf("Logitech K480 Keyboard Configurator (by trial-n-error)\n\n");
 		printf("Usage: %s -d /dev/hidraw{0,1,...} -f {on|off}:\n\n", argv[0]);
 		printf("-d /dev/hidrawX\n"
 		       "   Path to hidraw device. Determine by e.g.:\n"
@@ -152,8 +147,9 @@ int main(int argc, char **argv)
        	{
 		if (info.bustype != BUS_BLUETOOTH ||
 		    info.vendor  != HID_VENDOR_ID_LOGITECH ||
-		    (info.product != HID_DEVICE_ID_K480 &&
-					info.product != HID_DEVICE_ID_K480_ALT))
+		    (info.product != HID_DEVICE_ID_K480_0 &&
+			 info.product != HID_DEVICE_ID_K480_1 &&
+			 info.product != HID_DEVICE_ID_K480_2))
 		{
 			errno = EPERM;
 			perror("The given device is not a supported "
