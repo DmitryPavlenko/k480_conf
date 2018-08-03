@@ -2,4 +2,4 @@ install:
 	sudo ./install.sh
 
 build:
-	./build.sh
+	gcc -o k480_conf k480_conf.c
