@@ -35,3 +35,8 @@ To keep this setting after a restart you need to edit hidraw device number in `9
 ```console
 $make install
 ```
+
+For fully removing rules and utility from system run: 
+```console
+$make uninstall
+```
