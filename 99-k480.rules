@@ -1,1 +1,1 @@
-KERNEL=="hidrawXX", SUBSYSTEM=="hidraw", ACTION=="add", SUBSYSTEMS=="bluetooth", RUN+="/opt/bin/k480.sh %p"
+SUBSYSTEM=="hidraw", SUBSYSTEMS=="bluetooth", ACTION=="add", RUN+="/opt/bin/k480.sh %p"
